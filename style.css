@@ -1,12 +1,10 @@
 ﻿.completed {
     color: orange;
     text-decoration: line-through;
-    text-align: left;
 }
 
 .incomplete {
     color: black;
-    text-align: left;
 }
 
 body{
