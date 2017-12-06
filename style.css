@@ -1,4 +1,4 @@
-﻿.completed {
+﻿.complete {
     color: orange;
     text-decoration: line-through;
 }
@@ -8,5 +8,6 @@
 }
 
 body{
-    text-align: center;
+	 margin: 0px;
+	 text-align: center;
 }

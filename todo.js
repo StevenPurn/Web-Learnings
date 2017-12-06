@@ -1,53 +1,81 @@
-﻿const form = document.querySelector('form')
-form.addEventListener('submit', submitForm)
-document.body.addEventListener('change', changeCheckbox)
-document.body.addEventListener('click', toggleItemVisibility)
-
-function submitForm(event) {
-    event.preventDefault()
-    const input = form.querySelector('input')
-    const toDoItem = document.querySelector('#toDoItem')
-    if (input.value.trim().length > 0) {
-        toDoItem.content.querySelector('.toDoText').innerText = input.value
-        document.body.insertBefore(document.importNode(toDoItem.content, true), document.querySelector('.filters'))
-    }
-    input.value = null
+﻿const appState = {
+	filter: 'ALL',
+	listItems:[]
 }
 
-function changeCheckbox(event) {
-    if (event.target.matches('input[type="checkbox"]')) {
-        event.target.parentElement.className = event.target.checked ? 'completed' : 'incomplete'
-    }
+document.body.addEventListener('click', handleClick)
+document.body.addEventListener('change', handleChange)
+document.body.addEventListener('submit', handleSubmit)
+
+function render(){
+	return `
+		<form name="OurForm">
+			<input type="text" name="Thomas" placeholder="What you gon' do?">
+		</form>
+		${appState.listItems.filter(filterItem).map(renderItem).join('')}
+		<div class="filters">
+			<button data-filter-button="INCOMPLETE">Incomplete</button>
+			<button data-filter-button="COMPLETE">Completed</button>
+			<button data-filter-button="ALL">All</button>
+		</div>
+	`
 }
 
-function toggleItemVisibility(event) {
-    if (event.target.matches('button')) {
-        if (event.target.innerText === 'X') {
-            event.target.parentElement.parentElement.remove()
-            return
-        }
-        showElementsOfAllClasses()
-        console.log(event.target.innerText)
-        if (event.target.innerText === 'Completed') {
-            toggleElementsOfClass('incomplete', false)
-        } else if (event.target.innerText === 'Incomplete') {
-            toggleElementsOfClass('completed', false)
-        }
-    }
+function filterItem(listItem){
+	if(appState.filter === "ALL"){
+		return true
+	}else if(appState.filter == "COMPLETE")	{
+		return listItem.isComplete 
+	}else{
+		return !listItem.isComplete
+	}
 }
 
-function showElementsOfAllClasses() {
-    toggleElementsOfClass('completed', true)
-    toggleElementsOfClass('incomplete', true)
+function renderItem(listItem, index){
+	return `
+		<div class="toDoItem">
+			<label class="${listItem.isComplete ? 'complete' : 'incomplete'}">
+				<input data-checkbox-button=${index} type="checkbox" ${listItem.isComplete ? 'checked' : ''}>
+				<span class="toDoText">${listItem.title}</span>
+				<button data-remove-button=${index}>X</button>
+			</label>
+		</div>
+		`
 }
 
-function toggleElementsOfClass(className, toggleOn) {
-    const displayType = toggleOn ? 'block' : 'none'
-    var divs = document.body.getElementsByClassName(className)
-    if (divs.length <= 0) {
-        return
-    }
-    for (var i = 0; i < divs.length; i++) {
-        divs[i].style.display = displayType
-    }
+function mountToDOM(){
+	document.body.querySelector('#app').innerHTML = render()
+	document.querySelector("[name=Thomas]").focus()
 }
+
+function handleClick(event){
+	const { removeButton, filterButton } = event.target.dataset
+ 	if(filterButton){
+		appState.filter = filterButton
+		mountToDOM()
+	}else if(removeButton){
+		appState.listItems.splice(removeButton, 1)
+		mountToDOM()
+	}
+}
+
+function handleChange(event){
+	const { checkboxButton } = event.target.dataset
+	if(checkboxButton){
+		appState.listItems[checkboxButton].isComplete = event.target.checked
+		mountToDOM()
+	}
+}
+
+function handleSubmit(event){
+	const titleOfItem = document.querySelector("[name=Thomas]").value.trim()
+	if(titleOfItem){
+		appState.listItems.push({
+			title: titleOfItem,
+			isComplete : false
+		})
+		mountToDOM()
+	}
+}
+
+mountToDOM()
