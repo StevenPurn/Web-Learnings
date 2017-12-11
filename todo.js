@@ -8,17 +8,33 @@ document.body.addEventListener('change', handleChange)
 document.body.addEventListener('submit', handleSubmit)
 
 function render(){
-	return `
+    return `
+        <button data-checkall-button="CHECKALL">v</button>
 		<form name="OurForm">
 			<input type="text" name="Thomas" placeholder="What you gon' do?">
 		</form>
 		${appState.listItems.filter(filterItem).map(renderItem).join('')}
+        <div class="">${getCompletedText()} 
 		<div class="filters">
 			<button data-filter-button="INCOMPLETE">Incomplete</button>
 			<button data-filter-button="COMPLETE">Completed</button>
 			<button data-filter-button="ALL">All</button>
+            <button data-clearcomplete-button="CLEARCOMPLETED">Clear completed</button>
 		</div>
 	`
+}
+
+function getCompletedText() {
+    const count = appState.listItems.filter(x => !x.isComplete).length
+    console.log(count)
+    let completedString = ""
+
+    if(count === 1) {
+        completedString = "1 item remaining"
+    } else {
+        completedString = count + " items remaining"
+    }
+    return completedString
 }
 
 function filterItem(listItem){
@@ -49,14 +65,40 @@ function mountToDOM(){
 }
 
 function handleClick(event){
-	const { removeButton, filterButton } = event.target.dataset
+	const { removeButton, filterButton, clearcompleteButton, checkallButton } = event.target.dataset
  	if(filterButton){
 		appState.filter = filterButton
 		mountToDOM()
 	}else if(removeButton){
 		appState.listItems.splice(removeButton, 1)
 		mountToDOM()
-	}
+      } else if (clearcompleteButton) {
+          appState.listItems = appState.listItems.filter(x => !x.isComplete)
+          mountToDOM()
+      } else if (checkallButton) {
+          console.log("checking state of list items")
+          if (appState.listItems.allValuesSame()) {
+              console.log("list items the same")
+              for (var i = 0; i < appState.listItems.length; i++) {
+                  appState.listItems[i].isComplete = !appState.listItems[i].isComplete
+              }
+          } else if (appState.listItems.find(x => x.isComplete)) {
+              console.log("one item was complete")
+              for (var i = 0; i < appState.listItems.length; i++) {
+                  appState.listItems[i].isComplete = true
+              }
+          }
+          mountToDOM()
+      }
+}
+
+Array.prototype.allValuesSame = function () {
+
+    for (var i = 1; i < this.length; i++) {
+        if (this[i].isComplete !== this[0].isComplete)
+            return false;
+    }
+    return true;
 }
 
 function handleChange(event){
