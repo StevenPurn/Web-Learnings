@@ -26,21 +26,13 @@ function render(){
 
 function getCompletedText() {
     const count = appState.listItems.filter(x => !x.isComplete).length
-    console.log(count)
-    let completedString = ""
-
-    if(count === 1) {
-        completedString = "1 item remaining"
-    } else {
-        completedString = count + " items remaining"
-    }
-    return completedString
+    return count === 1 ? "1 item remaining" : count + " items remaining"
 }
 
 function filterItem(listItem){
 	if(appState.filter === "ALL"){
 		return true
-	}else if(appState.filter == "COMPLETE")	{
+	}else if(appState.filter === "COMPLETE")	{
 		return listItem.isComplete 
 	}else{
 		return !listItem.isComplete
@@ -72,30 +64,28 @@ function handleClick(event){
 	}else if(removeButton){
 		appState.listItems.splice(removeButton, 1)
 		mountToDOM()
-      } else if (clearcompleteButton) {
-          appState.listItems = appState.listItems.filter(x => !x.isComplete)
-          mountToDOM()
-      } else if (checkallButton) {
-          console.log("checking state of list items")
-          if (appState.listItems.allValuesSame()) {
-              console.log("list items the same")
-              for (var i = 0; i < appState.listItems.length; i++) {
-                  appState.listItems[i].isComplete = !appState.listItems[i].isComplete
-              }
-          } else if (appState.listItems.find(x => x.isComplete)) {
-              console.log("one item was complete")
-              for (var i = 0; i < appState.listItems.length; i++) {
-                  appState.listItems[i].isComplete = true
-              }
-          }
-          mountToDOM()
-      }
+    } else if (clearcompleteButton) {
+        appState.listItems = appState.listItems.filter(x => !x.isComplete)
+        mountToDOM()
+    } else if (checkallButton) {
+        if (allValuesSame(appState.listItems)) {
+			appState.listItems.map(x => ({
+				...x,
+				isComplete: !x.isComplete
+			}))
+        } else {
+			appState.listItems.map(x => ({
+				...x,
+				isComplete: true
+			}))
+        }
+        mountToDOM()
+    }
 }
 
-Array.prototype.allValuesSame = function () {
-
-    for (var i = 1; i < this.length; i++) {
-        if (this[i].isComplete !== this[0].isComplete)
+function allValuesSame(array) {
+    for (var i = 1; i < array.length; i++) {
+        if (array[i].isComplete !== array[0].isComplete)
             return false;
     }
     return true;
